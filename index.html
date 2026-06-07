@@ -12,7 +12,8 @@
   <meta property="og:title" content="QRForge — Gerador de QR Code Gratuito" />
   <meta property="og:description" content="Crie QR Codes profissionais em segundos. 100% grátis, sem cadastro." />
   <meta property="og:type" content="website" />
-
+  <!-- Favicon inline (SVG embutido como data URI — funciona sem arquivo externo) -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2300e5a0'/%3E%3Crect x='5' y='5' width='9' height='9' rx='1.5' fill='%230d0f14'/%3E%3Crect x='7' y='7' width='5' height='5' rx='0.5' fill='%2300e5a0'/%3E%3Crect x='18' y='5' width='9' height='9' rx='1.5' fill='%230d0f14'/%3E%3Crect x='20' y='7' width='5' height='5' rx='0.5' fill='%2300e5a0'/%3E%3Crect x='5' y='18' width='9' height='9' rx='1.5' fill='%230d0f14'/%3E%3Crect x='7' y='20' width='5' height='5' rx='0.5' fill='%2300e5a0'/%3E%3Crect x='18' y='18' width='4' height='4' rx='0.5' fill='%230d0f14'/%3E%3Crect x='24' y='18' width='3' height='3' rx='0.5' fill='%230d0f14'/%3E%3Crect x='18' y='24' width='3' height='3' rx='0.5' fill='%230d0f14'/%3E%3Crect x='23' y='23' width='4' height='4' rx='0.5' fill='%230d0f14'/%3E%3C/svg%3E" />
   <!-- Fontes -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
@@ -575,7 +576,345 @@
     .toast.show {
       transform: translateX(-50%) translateY(0);
     }
+    /* ============================================================
+       INDICADORES DE CONFIANÇA
+    ============================================================ */
+    .trust-bar {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin: 0 auto 40px;
+      position: relative;
+      z-index: 10;
+      max-width: 780px;
+      width: 100%;
+    }
 
+    .trust-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 50px;
+      padding: 7px 14px;
+      font-size: 0.78rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .trust-item .trust-icon {
+      font-size: 0.9rem;
+    }
+
+    /* ============================================================
+       CAMPOS DE WI-FI (ocultos por padrão)
+    ============================================================ */
+    .wifi-fields {
+      display: none;
+      gap: 14px;
+      flex-direction: column;
+      margin-bottom: 20px;
+    }
+
+    .wifi-fields.visible { display: flex; }
+
+    .wifi-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    select {
+      width: 100%;
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 0.98rem;
+      padding: 13px 16px;
+      outline: none;
+      appearance: none;
+      cursor: pointer;
+      transition: border-color var(--transition), box-shadow var(--transition);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237a819c' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 38px;
+    }
+
+    select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    /* ============================================================
+       MENSAGEM DE SUCESSO
+    ============================================================ */
+    .success-banner {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      background: rgba(0, 229, 160, 0.1);
+      border: 1px solid rgba(0, 229, 160, 0.3);
+      border-radius: 12px;
+      padding: 12px 18px;
+      margin-bottom: 20px;
+      font-size: 0.88rem;
+      color: var(--accent);
+      font-weight: 500;
+      animation: slideUp 0.3s ease;
+    }
+
+    .success-banner.visible { display: flex; }
+
+    /* Destaque pulsante no wrapper do QR após geração */
+    .qr-wrapper.highlight {
+      box-shadow: 0 0 0 3px var(--accent), var(--shadow);
+      animation: qrHighlight 1.2s ease forwards;
+    }
+
+    @keyframes qrHighlight {
+      0%   { box-shadow: 0 0 0 4px var(--accent), var(--shadow); }
+      60%  { box-shadow: 0 0 0 8px var(--accent-glow), var(--shadow); }
+      100% { box-shadow: 0 0 0 1px var(--border), var(--shadow); }
+    }
+
+    /* ============================================================
+       HISTÓRICO LOCAL
+    ============================================================ */
+    .history-section {
+      width: 100%;
+      max-width: 780px;
+      margin-top: 32px;
+      position: relative;
+      z-index: 10;
+      display: none;
+    }
+
+    .history-section.visible { display: block; }
+
+    .history-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .history-header h3 {
+      font-family: var(--font-head);
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .btn-history-clear {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: var(--font-body);
+      font-size: 0.75rem;
+      padding: 5px 12px;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+
+    .btn-history-clear:hover { color: var(--error); border-color: var(--error); }
+
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .history-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      cursor: pointer;
+      transition: border-color var(--transition);
+    }
+
+    .history-item:hover { border-color: var(--accent); }
+
+    .history-item-info {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      overflow: hidden;
+    }
+
+    .history-item-type {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    .history-item-value {
+      font-size: 0.85rem;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 560px;
+    }
+
+    .history-item-date {
+      font-size: 0.72rem;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    /* ============================================================
+       SEÇÕES DE CONTEÚDO SEO (O que é, Como usar, FAQ, Sobre)
+    ============================================================ */
+    .content-sections {
+      width: 100%;
+      max-width: 780px;
+      margin-top: 56px;
+      position: relative;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+
+    .content-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 32px 36px;
+    }
+
+    .content-card h2 {
+      font-family: var(--font-head);
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.4px;
+      margin-bottom: 16px;
+      color: var(--text);
+    }
+
+    .content-card p {
+      color: var(--muted);
+      font-size: 0.93rem;
+      line-height: 1.75;
+      margin-bottom: 12px;
+    }
+
+    .content-card p:last-child { margin-bottom: 0; }
+
+    .how-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-top: 4px;
+    }
+
+    .how-step {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+    }
+
+    .step-number {
+      width: 28px;
+      height: 28px;
+      min-width: 28px;
+      background: var(--accent-glow);
+      border: 1px solid rgba(0,229,160,0.3);
+      color: var(--accent);
+      border-radius: 50%;
+      font-size: 0.78rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 1px;
+    }
+
+    .step-text {
+      font-size: 0.93rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .step-text strong { color: var(--text); }
+
+    /* FAQ */
+    .faq-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .faq-item {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .faq-question {
+      width: 100%;
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 0.92rem;
+      font-weight: 600;
+      padding: 15px 18px;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      transition: background var(--transition);
+    }
+
+    .faq-question:hover { background: var(--surface2); }
+
+    .faq-arrow {
+      font-size: 0.7rem;
+      transition: transform var(--transition);
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+
+    .faq-item.open .faq-arrow { transform: rotate(180deg); }
+
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease, padding 0.3s ease;
+      padding: 0 18px;
+      color: var(--muted);
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+
+    .faq-item.open .faq-answer {
+      max-height: 200px;
+      padding: 0 18px 15px;
+    }
+
+    @media (max-width: 560px) {
+      .content-card { padding: 22px 18px; }
+      .wifi-row { grid-template-columns: 1fr; }
+      .history-item-value { max-width: 200px; }
+      .trust-bar { gap: 7px; }
+      .trust-item { font-size: 0.72rem; padding: 6px 10px; }
+    }
     /* ============================================================
        FOOTER
     ============================================================ */
@@ -652,8 +991,34 @@
         <button class="tab-btn"        data-type="text"  role="tab" aria-selected="false">📝 Texto</button>
         <button class="tab-btn"        data-type="email" role="tab" aria-selected="false">✉️ E-mail</button>
         <button class="tab-btn"        data-type="phone" role="tab" aria-selected="false">📱 Telefone</button>
+        <button class="tab-btn"        data-type="wifi"  role="tab" aria-selected="false">📶 Wi-Fi</button>
+      </div>
+      <!-- Banner de sucesso (aparece após gerar) -->
+      <div class="success-banner" id="success-banner">
+        ✅ QR Code gerado com sucesso! Escaneie ou baixe abaixo.
       </div>
 
+      <!-- Campos extras para Wi-Fi (visíveis somente nesta aba) -->
+      <div class="wifi-fields" id="wifi-fields">
+        <div class="wifi-row">
+          <div class="form-group" style="margin-bottom:0">
+            <label for="wifi-ssid">Nome da rede (SSID)</label>
+            <input type="text" id="wifi-ssid" placeholder="MinhaRedeWiFi" autocomplete="off" />
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label for="wifi-security">Tipo de segurança</label>
+            <select id="wifi-security" aria-label="Tipo de segurança Wi-Fi">
+              <option value="WPA">WPA / WPA2</option>
+              <option value="WEP">WEP</option>
+              <option value="nopass">Sem senha (aberta)</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label for="wifi-password">Senha da rede</label>
+          <input type="text" id="wifi-password" placeholder="Deixe vazio se a rede for aberta" autocomplete="off" />
+        </div>
+      </div>
       <!-- Campo de input (dinâmico) -->
       <div class="form-group">
         <label id="input-label" for="qr-input">Endereço URL</label>
@@ -698,14 +1063,131 @@
           <button class="btn btn-primary" id="btn-download" aria-label="Baixar QR Code em PNG">
             ⬇️ Baixar PNG
           </button>
+          <button class="btn btn-ghost" id="btn-copy" aria-label="Copiar conteúdo gerado">
+            📋 Copiar conteúdo
+          </button>
         </div>
-
         <p class="qr-meta" id="qr-meta"></p>
       </section>
 
     </div><!-- /.card -->
   </main>
+  <!-- ============================================================
+       INDICADORES DE CONFIANÇA
+  ============================================================ -->
+  <div class="trust-bar" role="list" aria-label="Indicadores de confiança">
+    <div class="trust-item" role="listitem"><span class="trust-icon">🚫</span> Sem cadastro necessário</div>
+    <div class="trust-item" role="listitem"><span class="trust-icon">🔒</span> Dados não enviados a servidores</div>
+    <div class="trust-item" role="listitem"><span class="trust-icon">⚡</span> Funciona direto no navegador</div>
+  </div>
 
+  <!-- ============================================================
+       HISTÓRICO LOCAL
+  ============================================================ -->
+  <div class="history-section" id="history-section" aria-label="Histórico de QR Codes">
+    <div class="history-header">
+      <h3>🕓 Histórico da sessão</h3>
+      <button class="btn-history-clear" id="btn-history-clear">Limpar histórico</button>
+    </div>
+    <div class="history-list" id="history-list"></div>
+  </div>
+
+  <!-- ============================================================
+       SEÇÕES DE CONTEÚDO SEO
+  ============================================================ -->
+  <div class="content-sections">
+
+    <!-- O que é um QR Code -->
+    <article class="content-card">
+      <h2>O que é um QR Code?</h2>
+      <p>QR Code (Quick Response Code) é um código de barras bidimensional capaz de armazenar informações como URLs, textos, e-mails, números de telefone e dados de redes Wi-Fi. Criado em 1994 pela empresa japonesa Denso Wave, o QR Code se tornou um dos padrões de comunicação digital mais usados no mundo.</p>
+      <p>Diferente de um código de barras tradicional, o QR Code pode ser lido de qualquer ângulo com a câmera de um smartphone — sem necessidade de aplicativo especial na maioria dos celulares modernos com Android ou iOS.</p>
+    </article>
+
+    <!-- Como usar -->
+    <article class="content-card">
+      <h2>Como usar o QRForge</h2>
+      <div class="how-steps">
+        <div class="how-step">
+          <span class="step-number">1</span>
+          <span class="step-text"><strong>Escolha o tipo de conteúdo:</strong> URL, texto livre, e-mail, telefone ou Wi-Fi usando as abas no topo do formulário.</span>
+        </div>
+        <div class="how-step">
+          <span class="step-number">2</span>
+          <span class="step-text"><strong>Preencha os dados:</strong> insira a informação que deseja converter em QR Code no campo indicado.</span>
+        </div>
+        <div class="how-step">
+          <span class="step-number">3</span>
+          <span class="step-text"><strong>Ajuste o tamanho</strong> usando o controle deslizante, de 128 até 400 pixels.</span>
+        </div>
+        <div class="how-step">
+          <span class="step-number">4</span>
+          <span class="step-text"><strong>Clique em "Gerar QR Code"</strong> e o resultado aparece instantaneamente na página.</span>
+        </div>
+        <div class="how-step">
+          <span class="step-number">5</span>
+          <span class="step-text"><strong>Baixe em PNG</strong> clicando no botão de download, ou copie o conteúdo original para a área de transferência.</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- FAQ -->
+    <article class="content-card">
+      <h2>Perguntas frequentes</h2>
+      <div class="faq-list" id="faq-list">
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            O QRForge é realmente gratuito?
+            <span class="faq-arrow">▼</span>
+          </button>
+          <div class="faq-answer">Sim, 100% gratuito e sem limitações de uso. Você pode gerar quantos QR Codes quiser sem precisar criar uma conta ou inserir dados de pagamento.</div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            Meus dados são enviados para algum servidor?
+            <span class="faq-arrow">▼</span>
+          </button>
+          <div class="faq-answer">Não. Todo o processamento acontece diretamente no seu navegador. Nenhum dado que você inserir é transmitido para servidores externos. O QRForge funciona completamente offline após o carregamento inicial da página.</div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            O QR Code gerado tem prazo de validade?
+            <span class="faq-arrow">▼</span>
+          </button>
+          <div class="faq-answer">Não. QR Codes gerados com o QRForge são estáticos — as informações ficam codificadas diretamente na imagem. Eles nunca expiram, desde que a imagem exista.</div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            Qual o tamanho ideal para impressão?
+            <span class="faq-arrow">▼</span>
+          </button>
+          <div class="faq-answer">Para impressão, recomendamos usar o tamanho máximo disponível (400px) e redimensionar conforme necessário no seu editor de imagens. Para uso digital (sites, redes sociais), 200px é suficiente na maioria dos casos.</div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            Como criar um QR Code para Wi-Fi?
+            <span class="faq-arrow">▼</span>
+          </button>
+          <div class="faq-answer">Clique na aba "📶 Wi-Fi", preencha o nome da rede (SSID), escolha o tipo de segurança e insira a senha. Ao escanear o QR Code gerado, o celular se conectará automaticamente à rede — sem precisar digitar a senha.</div>
+        </div>
+
+      </div>
+    </article>
+
+    <!-- Sobre o QRForge -->
+    <article class="content-card" id="sobre">
+      <h2>Sobre o QRForge</h2>
+      <p>O QRForge é um gerador de QR Code gratuito e de código aberto, criado para ser simples, rápido e confiável. Funciona diretamente no navegador, sem servidores, sem rastreamento e sem anúncios.</p>
+      <p>Compatível com qualquer dispositivo moderno — celular, tablet ou computador. Nenhuma instalação é necessária: basta abrir a página e começar a gerar.</p>
+      <p>O projeto é publicado via GitHub Pages, o que significa que o código-fonte é transparente e auditável por qualquer pessoa.</p>
+    </article>
+
+  </div><!-- /.content-sections -->
   <!-- Toast de erro -->
   <div class="toast" id="toast" role="alert" aria-live="assertive"></div>
 
@@ -722,10 +1204,11 @@
        ESTADO DA APLICAÇÃO
     ============================================================= */
     const state = {
-      type: 'url',        // tipo ativo: url | text | email | phone
+      type: 'url',        // tipo ativo: url | text | email | phone | wifi
       size: 200,          // tamanho do QR em px
       count: 0,           // QR Codes gerados na sessão
       theme: 'dark',      // dark | light
+      lastQrData: '',     // último conteúdo gerado (para o botão Copiar)
     };
 
     /* =============================================================
@@ -764,6 +1247,14 @@
         validate:    v => v.replace(/\D/g, '').length >= 8,
         errorHint:   'Informe um número de telefone válido (mínimo 8 dígitos).',
       },
+      wifi: {
+        inputType:   'text',
+        label:       'Confirme o nome da rede abaixo antes de gerar',
+        placeholder: 'Preencha os campos acima ↑',
+        prefix:      '',
+        validate:    () => true,  // validação feita separadamente
+        errorHint:   'Preencha o nome da rede Wi-Fi (SSID).',
+      },
     };
 
     /* =============================================================
@@ -786,7 +1277,16 @@
     const themeIcon     = document.getElementById('theme-icon');
     const themeLabel    = document.getElementById('theme-label');
     const tabBtns       = document.querySelectorAll('.tab-btn');
-
+    const wifiFields    = document.getElementById('wifi-fields');
+    const wifiSsid      = document.getElementById('wifi-ssid');
+    const wifiPassword  = document.getElementById('wifi-password');
+    const wifiSecurity  = document.getElementById('wifi-security');
+    const btnCopy       = document.getElementById('btn-copy');
+    const successBanner = document.getElementById('success-banner');
+    const historySection= document.getElementById('history-section');
+    const historyList   = document.getElementById('history-list');
+    const btnHistoryClear= document.getElementById('btn-history-clear');
+    
     /* Instância do QRCode atual (para destruir antes de recriar) */
     let qrInstance = null;
 
@@ -847,11 +1347,21 @@
         inputEl.value       = '';
         inputLabel.textContent = cfg.label;
 
+        // Mostra/oculta campos extras de Wi-Fi
+        if (newType === 'wifi') {
+          wifiFields.classList.add('visible');
+          inputEl.closest('.form-group').style.display = 'none'; // oculta campo genérico
+        } else {
+          wifiFields.classList.remove('visible');
+          inputEl.closest('.form-group').style.display = '';
+        }
+
         // Limpa erros
         clearErrors();
 
-        // Esconde QR anterior
+        // Esconde QR anterior e banner de sucesso
         qrSection.classList.remove('visible');
+        successBanner.classList.remove('visible');
       });
     });
 
@@ -872,20 +1382,43 @@
     function generateQR() {
       clearErrors();
 
-      const raw = inputEl.value.trim();
-      const cfg = typeConfig[state.type];
+      let qrData = '';
 
-      // Validação
-      if (!raw) {
-        showFieldError('Por favor, preencha o campo antes de gerar.');
-        return;
-      }
-      if (!cfg.validate(raw)) {
-        showFieldError(cfg.errorHint);
-        return;
+      // ── Geração de dados Wi-Fi ──────────────────────────────────
+      if (state.type === 'wifi') {
+        const ssid = wifiSsid.value.trim();
+        const pass = wifiPassword.value.trim();
+        const sec  = wifiSecurity.value;
+
+        if (!ssid) {
+          wifiSsid.classList.add('error');
+          showToast('Preencha o nome da rede Wi-Fi (SSID).');
+          return;
+        }
+
+        // Formato padrão IEEE 802.11: WIFI:T:WPA;S:NomeRede;P:senha;;
+        const escapedSsid = ssid.replace(/[\\;,"]/g, c => '\\' + c);
+        const escapedPass = pass.replace(/[\\;,"]/g, c => '\\' + c);
+        qrData = `WIFI:T:${sec};S:${escapedSsid};P:${escapedPass};;`;
+
+      // ── Geração para outros tipos ───────────────────────────────
+      } else {
+        const raw = inputEl.value.trim();
+        const cfg = typeConfig[state.type];
+
+        if (!raw) {
+          showFieldError('Por favor, preencha o campo antes de gerar.');
+          return;
+        }
+        if (!cfg.validate(raw)) {
+          showFieldError(cfg.errorHint);
+          return;
+        }
+        qrData = cfg.prefix + raw;
       }
 
-      const qrData = cfg.prefix + raw;
+      // Salva o dado gerado no estado (para o botão Copiar)
+      state.lastQrData = qrData;
 
       // Limpa QR anterior
       qrContainer.innerHTML = '';
@@ -907,19 +1440,31 @@
       // Mostra seção
       qrSection.classList.add('visible');
 
+      // Destaque visual no wrapper do QR
+      const qrWrapper = document.querySelector('.qr-wrapper');
+      qrWrapper.classList.remove('highlight');
+      void qrWrapper.offsetWidth; // força re-render para reiniciar animação
+      qrWrapper.classList.add('highlight');
+
+      // Banner de sucesso
+      successBanner.classList.add('visible');
+
       // Atualiza contador
       state.count++;
       sessionCount.textContent = state.count;
 
       // Meta informação
-      const typeLabels = { url: 'URL', text: 'Texto', email: 'E-mail', phone: 'Telefone' };
+      const typeLabels = { url: 'URL', text: 'Texto', email: 'E-mail', phone: 'Telefone', wifi: 'Wi-Fi' };
       const now = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
       qrMeta.textContent = `Tipo: ${typeLabels[state.type]} · Tamanho: ${state.size}×${state.size}px · Gerado às ${now}`;
+
+      // Salva no histórico localStorage
+      saveToHistory(state.type, qrData);
+      renderHistory();
 
       // Scroll suave até o QR
       setTimeout(() => qrSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
     }
-
     /* =============================================================
        DOWNLOAD PNG
     ============================================================= */
@@ -955,14 +1500,143 @@
        LIMPAR
     ============================================================= */
     btnClear.addEventListener('click', () => {
-      inputEl.value = '';
+      inputEl.value     = '';
+      wifiSsid.value    = '';
+      wifiPassword.value= '';
+      wifiSecurity.value= 'WPA';
       clearErrors();
+      wifiSsid.classList.remove('error');
       qrSection.classList.remove('visible');
+      successBanner.classList.remove('visible');
       qrContainer.innerHTML = '';
       if (qrInstance) { try { qrInstance.clear(); } catch (_) {} qrInstance = null; }
       inputEl.focus();
     });
+/* =============================================================
+       BOTÃO COPIAR CONTEÚDO
+    ============================================================= */
+    btnCopy.addEventListener('click', () => {
+      if (!state.lastQrData) {
+        showToast('Nenhum QR Code gerado ainda.');
+        return;
+      }
+      navigator.clipboard.writeText(state.lastQrData)
+        .then(() => {
+          btnCopy.textContent = '✅ Copiado!';
+          setTimeout(() => { btnCopy.innerHTML = '📋 Copiar conteúdo'; }, 2000);
+        })
+        .catch(() => {
+          // Fallback para navegadores mais antigos
+          const ta = document.createElement('textarea');
+          ta.value = state.lastQrData;
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+          btnCopy.textContent = '✅ Copiado!';
+          setTimeout(() => { btnCopy.innerHTML = '📋 Copiar conteúdo'; }, 2000);
+        });
+    });
 
+    /* =============================================================
+       HISTÓRICO LOCAL (localStorage — últimos 10)
+    ============================================================= */
+    const HISTORY_KEY = 'qrforge-history';
+
+    function loadHistory() {
+      try {
+        return JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
+      } catch (_) { return []; }
+    }
+
+    function saveToHistory(type, data) {
+      const history = loadHistory();
+      const entry = {
+        type,
+        data,
+        date: new Date().toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }),
+      };
+      // Remove duplicatas do mesmo conteúdo
+      const filtered = history.filter(h => h.data !== data);
+      // Mantém no máximo 10 entradas
+      filtered.unshift(entry);
+      if (filtered.length > 10) filtered.pop();
+      try { localStorage.setItem(HISTORY_KEY, JSON.stringify(filtered)); } catch (_) {}
+    }
+
+    function renderHistory() {
+      const history = loadHistory();
+      if (history.length === 0) {
+        historySection.classList.remove('visible');
+        return;
+      }
+      historySection.classList.add('visible');
+      const typeLabels = { url: 'URL', text: 'Texto', email: 'E-mail', phone: 'Telefone', wifi: 'Wi-Fi' };
+      historyList.innerHTML = history.map((entry, i) => `
+        <div class="history-item" data-index="${i}" title="Clique para regerar este QR Code">
+          <div class="history-item-info">
+            <span class="history-item-type">${typeLabels[entry.type] || entry.type}</span>
+            <span class="history-item-value">${entry.data}</span>
+          </div>
+          <span class="history-item-date">${entry.date}</span>
+        </div>
+      `).join('');
+
+      // Clique no item do histórico regenera o QR
+      historyList.querySelectorAll('.history-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const entry = loadHistory()[parseInt(item.dataset.index)];
+          if (!entry) return;
+
+          // Regenera direto da string salva
+          qrContainer.innerHTML = '';
+          if (qrInstance) { try { qrInstance.clear(); } catch (_) {} qrInstance = null; }
+          try {
+            qrInstance = new QRCode(qrContainer, {
+              text:         entry.data,
+              width:        state.size,
+              height:       state.size,
+              correctLevel: QRCode.CorrectLevel.H,
+            });
+          } catch (_) { return; }
+          state.lastQrData = entry.data;
+          qrSection.classList.add('visible');
+          successBanner.classList.add('visible');
+          qrSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        });
+      });
+    }
+
+    // Limpar histórico
+    btnHistoryClear.addEventListener('click', () => {
+      try { localStorage.removeItem(HISTORY_KEY); } catch (_) {}
+      renderHistory();
+    });
+
+    // Inicializa histórico ao carregar a página
+    renderHistory();
+
+    /* =============================================================
+       FAQ — ACCORDION
+    ============================================================= */
+    document.querySelectorAll('.faq-question').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const item = btn.closest('.faq-item');
+        const isOpen = item.classList.contains('open');
+        // Fecha todos
+        document.querySelectorAll('.faq-item').forEach(i => {
+          i.classList.remove('open');
+          i.querySelector('.faq-question').setAttribute('aria-expanded', 'false');
+        });
+        // Abre o clicado (toggle)
+        if (!isOpen) {
+          item.classList.add('open');
+          btn.setAttribute('aria-expanded', 'true');
+        }
+      });
+    });
     /* =============================================================
        HELPERS DE ERRO
     ============================================================= */
