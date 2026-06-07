@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- SEO -->
+  <title>QRForge — Gerador de QR Code Gratuito e Profissional</title>
+  <meta name="description" content="Gere QR Codes gratuitos para URL, texto, e-mail e telefone em segundos. Baixe em PNG, personalize o tamanho e use sem cadastro. Ferramenta online 100% gratuita." />
+  <meta name="keywords" content="gerador qr code, qr code gratis, criar qr code, qr code online, gerar qr code url" />
+  <meta name="author" content="QRForge" />
+  <meta property="og:title" content="QRForge — Gerador de QR Code Gratuito" />
+  <meta property="og:description" content="Crie QR Codes profissionais em segundos. 100% grátis, sem cadastro." />
+  <meta property="og:type" content="website" />
+
+  <!-- Fontes -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Biblioteca QR Code (CDN confiável) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <style>
+    /* ============================================================
+       VARIÁVEIS E RESET
+    ============================================================ */
+    :root {
+      --bg:          #0d0f14;
+      --surface:     #161922;
+      --surface2:    #1e2230;
+      --border:      #2a2f42;
+      --accent:      #00e5a0;
+      --accent-dim:  #00c489;
+      --accent-glow: rgba(0, 229, 160, 0.18);
+      --text:        #edf0f7;
+      --muted:       #7a819c;
+      --error:       #ff5f6d;
+      --radius:      14px;
+      --font-head:   'Syne', sans-serif;
+      --font-body:   'DM Sans', sans-serif;
+      --shadow:      0 8px 32px rgba(0,0,0,0.45);
+      --transition:  0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Tema claro */
+    [data-theme="light"] {
+      --bg:          #f0f2f8;
+      --surface:     #ffffff;
+      --surface2:    #f5f6fa;
+      --border:      #dde0ee;
+      --accent:      #00b87a;
+      --accent-dim:  #009e69;
+      --accent-glow: rgba(0, 184, 122, 0.14);
+      --text:        #111422;
+      --muted:       #6b7290;
+      --error:       #e03030;
+      --shadow:      0 8px 32px rgba(0,0,0,0.10);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 16px 60px;
+      transition: background var(--transition), color var(--transition);
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Fundo decorativo */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -180px;
+      right: -120px;
+      width: 520px;
+      height: 520px;
+      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+      transition: background var(--transition);
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      bottom: -100px;
+      left: -80px;
+      width: 380px;
+      height: 380px;
+      background: radial-gradient(circle, rgba(80,100,255,0.08) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ============================================================
+       HEADER / NAV
+    ============================================================ */
+    header {
+      width: 100%;
+      max-width: 780px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 28px 0 0;
+      position: relative;
+      z-index: 10;
+    }
+
+    .logo {
+      font-family: var(--font-head);
+      font-size: 1.55rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: var(--text);
+    }
+
+    .logo span {
+      color: var(--accent);
+    }
+
+    /* Botão tema */
+    #theme-toggle {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      cursor: pointer;
+      padding: 8px 14px;
+      border-radius: 50px;
+      font-size: 0.78rem;
+      font-family: var(--font-body);
+      font-weight: 500;
+      letter-spacing: 0.3px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all var(--transition);
+    }
+
+    #theme-toggle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* ============================================================
+       HERO
+    ============================================================ */
+    .hero {
+      text-align: center;
+      margin: 52px 0 38px;
+      position: relative;
+      z-index: 10;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      background: var(--accent-glow);
+      border: 1px solid rgba(0,229,160,0.3);
+      color: var(--accent);
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 50px;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 {
+      font-family: var(--font-head);
+      font-size: clamp(2rem, 5vw, 3.1rem);
+      font-weight: 800;
+      line-height: 1.08;
+      letter-spacing: -1.5px;
+      margin-bottom: 16px;
+    }
+
+    .hero h1 em {
+      font-style: normal;
+      color: var(--accent);
+    }
+
+    .hero p {
+      color: var(--muted);
+      font-size: 1.05rem;
+      font-weight: 300;
+      max-width: 460px;
+      margin: 0 auto;
+      line-height: 1.65;
+    }
+
+    /* ============================================================
+       CONTADOR DE SESSÃO
+    ============================================================ */
+    .session-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 50px;
+      padding: 6px 16px 6px 10px;
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin: 0 auto 36px;
+      width: fit-content;
+      position: relative;
+      z-index: 10;
+    }
+
+    .session-badge .dot {
+      width: 8px;
+      height: 8px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.5; transform: scale(0.75); }
+    }
+
+    .session-badge strong {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* ============================================================
+       CARD PRINCIPAL
+    ============================================================ */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 36px;
+      width: 100%;
+      max-width: 780px;
+      box-shadow: var(--shadow);
+      position: relative;
+      z-index: 10;
+      transition: background var(--transition), border-color var(--transition);
+    }
+
+    /* ============================================================
+       TIPO DE CONTEÚDO (TABS)
+    ============================================================ */
+    .type-tabs {
+      display: flex;
+      gap: 6px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 5px;
+      margin-bottom: 26px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-family: var(--font-body);
+      font-size: 0.82rem;
+      font-weight: 500;
+      padding: 9px 6px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+
+    .tab-btn.active {
+      background: var(--surface);
+      color: var(--text);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    .tab-btn:hover:not(.active) {
+      color: var(--text);
+    }
+
+    /* ============================================================
+       FORMULÁRIO
+    ============================================================ */
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 8px;
+      letter-spacing: 0.3px;
+    }
+
+    input[type="text"],
+    input[type="url"],
+    input[type="email"],
+    input[type="tel"],
+    textarea {
+      width: 100%;
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 0.98rem;
+      padding: 13px 16px;
+      outline: none;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+
+    input:focus,
+    textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: var(--muted);
+      opacity: 0.6;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 90px;
+    }
+
+    /* Erro no campo */
+    input.error,
+    textarea.error {
+      border-color: var(--error);
+      box-shadow: 0 0 0 3px rgba(255,95,109,0.12);
+    }
+
+    .error-msg {
+      display: none;
+      color: var(--error);
+      font-size: 0.78rem;
+      margin-top: 6px;
+      font-weight: 500;
+    }
+
+    .error-msg.visible { display: block; }
+
+    /* ============================================================
+       OPÇÕES (TAMANHO + LINHA DIVISÓRIA)
+    ============================================================ */
+    .options-row {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .options-row label {
+      margin: 0;
+      white-space: nowrap;
+    }
+
+    .size-control {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+    }
+
+    input[type="range"] {
+      flex: 1;
+      appearance: none;
+      height: 4px;
+      background: var(--border);
+      border-radius: 4px;
+      outline: none;
+      cursor: pointer;
+      min-width: 80px;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      box-shadow: 0 0 0 3px var(--accent-glow);
+      transition: transform var(--transition);
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    .size-value {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--accent);
+      min-width: 48px;
+      text-align: right;
+    }
+
+    /* ============================================================
+       BOTÕES
+    ============================================================ */
+    .btn-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-family: var(--font-body);
+      font-weight: 600;
+      font-size: 0.92rem;
+      padding: 13px 22px;
+      transition: all var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #0a1a14;
+      flex: 1;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-dim);
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px var(--accent-glow);
+    }
+
+    .btn-primary:active { transform: translateY(0); }
+
+    .btn-ghost {
+      background: var(--surface2);
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+
+    .btn-ghost:hover {
+      color: var(--text);
+      border-color: var(--muted);
+    }
+
+    /* Ripple */
+    .btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0.12);
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+
+    .btn:active::after { opacity: 1; }
+
+    /* ============================================================
+       ÁREA DO QR CODE
+    ============================================================ */
+    .qr-section {
+      margin-top: 36px;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      animation: slideUp 0.35s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    .qr-section.visible { display: flex; }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .qr-wrapper {
+      background: #fff;
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: 0 0 0 1px var(--border), var(--shadow);
+      display: inline-flex;
+      position: relative;
+    }
+
+    /* Cantos decorativos */
+    .qr-wrapper::before,
+    .qr-wrapper::after {
+      content: '';
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border-color: var(--accent);
+      border-style: solid;
+      border-width: 0;
+    }
+
+    .qr-wrapper::before {
+      top: -4px; left: -4px;
+      border-top-width: 3px;
+      border-left-width: 3px;
+      border-radius: 4px 0 0 0;
+    }
+
+    .qr-wrapper::after {
+      bottom: -4px; right: -4px;
+      border-bottom-width: 3px;
+      border-right-width: 3px;
+      border-radius: 0 0 4px 0;
+    }
+
+    #qr-container { line-height: 0; }
+    #qr-container canvas, #qr-container img { display: block; border-radius: 6px; }
+
+    .qr-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 22px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .qr-actions .btn {
+      min-width: 160px;
+    }
+
+    .qr-meta {
+      margin-top: 14px;
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    /* ============================================================
+       MENSAGEM DE ERRO GLOBAL
+    ============================================================ */
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--error);
+      color: #fff;
+      font-size: 0.88rem;
+      font-weight: 500;
+      padding: 12px 24px;
+      border-radius: 50px;
+      box-shadow: 0 8px 24px rgba(255,95,109,0.35);
+      transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+      z-index: 999;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ============================================================
+       FOOTER
+    ============================================================ */
+    footer {
+      margin-top: 48px;
+      text-align: center;
+      font-size: 0.78rem;
+      color: var(--muted);
+      position: relative;
+      z-index: 10;
+    }
+
+    footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    /* ============================================================
+       RESPONSIVO
+    ============================================================ */
+    @media (max-width: 560px) {
+      .card { padding: 24px 18px; }
+
+      .tab-btn { font-size: 0.7rem; padding: 8px 4px; }
+
+      .btn-row { flex-direction: column; }
+
+      .options-row { flex-direction: column; align-items: flex-start; gap: 10px; }
+
+      .qr-actions { flex-direction: column; align-items: center; }
+
+      .qr-actions .btn { width: 100%; max-width: 280px; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ============================================================
+       HEADER
+  ============================================================ -->
+  <header>
+    <div class="logo">QR<span>Forge</span></div>
+    <button id="theme-toggle" aria-label="Alternar tema">
+      <span id="theme-icon">☀️</span>
+      <span id="theme-label">Modo claro</span>
+    </button>
+  </header>
+
+  <!-- ============================================================
+       HERO
+  ============================================================ -->
+  <section class="hero" aria-label="Apresentação">
+    <div class="hero-badge">100% Gratuito · Sem Cadastro</div>
+    <h1>Gere QR Codes<br /><em>em segundos</em></h1>
+    <p>Transforme URLs, textos, e-mails e telefones em QR Codes profissionais. Baixe em PNG na hora.</p>
+  </section>
+
+  <!-- Contador de sessão -->
+  <div class="session-badge" role="status" aria-live="polite">
+    <span class="dot"></span>
+    <span><strong id="session-count">0</strong> QR Codes gerados nesta sessão</span>
+  </div>
+
+  <!-- ============================================================
+       CARD PRINCIPAL
+  ============================================================ -->
+  <main>
+    <div class="card" role="main">
+
+      <!-- Seleção de tipo -->
+      <div class="type-tabs" role="tablist" aria-label="Tipo de conteúdo">
+        <button class="tab-btn active" data-type="url"   role="tab" aria-selected="true">🔗 URL</button>
+        <button class="tab-btn"        data-type="text"  role="tab" aria-selected="false">📝 Texto</button>
+        <button class="tab-btn"        data-type="email" role="tab" aria-selected="false">✉️ E-mail</button>
+        <button class="tab-btn"        data-type="phone" role="tab" aria-selected="false">📱 Telefone</button>
+      </div>
+
+      <!-- Campo de input (dinâmico) -->
+      <div class="form-group">
+        <label id="input-label" for="qr-input">Endereço URL</label>
+        <input
+          type="url"
+          id="qr-input"
+          placeholder="https://seusite.com.br"
+          autocomplete="off"
+          aria-describedby="input-error"
+        />
+        <div class="error-msg" id="input-error" role="alert">Por favor, preencha o campo antes de gerar.</div>
+      </div>
+
+      <!-- Opções -->
+      <div class="options-row">
+        <label for="qr-size">Tamanho:</label>
+        <div class="size-control">
+          <input type="range" id="qr-size" min="128" max="400" step="8" value="200" aria-label="Tamanho do QR Code" />
+          <span class="size-value" id="size-display">200 px</span>
+        </div>
+      </div>
+
+      <!-- Botões de ação -->
+      <div class="btn-row">
+        <button class="btn btn-primary" id="btn-generate" aria-label="Gerar QR Code">
+          ⚡ Gerar QR Code
+        </button>
+        <button class="btn btn-ghost" id="btn-clear" aria-label="Limpar formulário">
+          🗑 Limpar
+        </button>
+      </div>
+
+      <!-- ============================================================
+           ÁREA DO QR CODE GERADO
+      ============================================================ -->
+      <section class="qr-section" id="qr-section" aria-label="QR Code gerado" aria-live="polite">
+        <div class="qr-wrapper">
+          <div id="qr-container"></div>
+        </div>
+
+        <div class="qr-actions">
+          <button class="btn btn-primary" id="btn-download" aria-label="Baixar QR Code em PNG">
+            ⬇️ Baixar PNG
+          </button>
+        </div>
+
+        <p class="qr-meta" id="qr-meta"></p>
+      </section>
+
+    </div><!-- /.card -->
+  </main>
+
+  <!-- Toast de erro -->
+  <div class="toast" id="toast" role="alert" aria-live="assertive"></div>
+
+  <!-- Footer -->
+  <footer>
+    <p>QRForge &copy; 2025 · Feito no Brasil · <a href="https://github.com" target="_blank" rel="noopener">GitHub Pages</a></p>
+  </footer>
+
+  <!-- ============================================================
+       JAVASCRIPT
+  ============================================================ -->
+  <script>
+    /* =============================================================
+       ESTADO DA APLICAÇÃO
+    ============================================================= */
+    const state = {
+      type: 'url',        // tipo ativo: url | text | email | phone
+      size: 200,          // tamanho do QR em px
+      count: 0,           // QR Codes gerados na sessão
+      theme: 'dark',      // dark | light
+    };
+
+    /* =============================================================
+       CONFIGURAÇÕES POR TIPO
+    ============================================================= */
+    const typeConfig = {
+      url: {
+        inputType:   'url',
+        label:       'Endereço URL',
+        placeholder: 'https://seusite.com.br',
+        prefix:      '',           // valor puro
+        validate:    v => v.startsWith('http://') || v.startsWith('https://'),
+        errorHint:   'Informe uma URL válida começando com http:// ou https://',
+      },
+      text: {
+        inputType:   'text',
+        label:       'Texto livre',
+        placeholder: 'Digite qualquer texto...',
+        prefix:      '',
+        validate:    v => v.length > 0,
+        errorHint:   'O campo de texto não pode estar vazio.',
+      },
+      email: {
+        inputType:   'email',
+        label:       'Endereço de e-mail',
+        placeholder: 'seuemail@exemplo.com',
+        prefix:      'mailto:',
+        validate:    v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v),
+        errorHint:   'Informe um e-mail válido.',
+      },
+      phone: {
+        inputType:   'tel',
+        label:       'Número de telefone',
+        placeholder: '+55 11 99999-9999',
+        prefix:      'tel:',
+        validate:    v => v.replace(/\D/g, '').length >= 8,
+        errorHint:   'Informe um número de telefone válido (mínimo 8 dígitos).',
+      },
+    };
+
+    /* =============================================================
+       REFERÊNCIAS DOM
+    ============================================================= */
+    const inputEl       = document.getElementById('qr-input');
+    const inputLabel    = document.getElementById('input-label');
+    const inputError    = document.getElementById('input-error');
+    const sizeRange     = document.getElementById('qr-size');
+    const sizeDisplay   = document.getElementById('size-display');
+    const btnGenerate   = document.getElementById('btn-generate');
+    const btnClear      = document.getElementById('btn-clear');
+    const btnDownload   = document.getElementById('btn-download');
+    const qrSection     = document.getElementById('qr-section');
+    const qrContainer   = document.getElementById('qr-container');
+    const qrMeta        = document.getElementById('qr-meta');
+    const sessionCount  = document.getElementById('session-count');
+    const toast         = document.getElementById('toast');
+    const themeToggle   = document.getElementById('theme-toggle');
+    const themeIcon     = document.getElementById('theme-icon');
+    const themeLabel    = document.getElementById('theme-label');
+    const tabBtns       = document.querySelectorAll('.tab-btn');
+
+    /* Instância do QRCode atual (para destruir antes de recriar) */
+    let qrInstance = null;
+
+    /* =============================================================
+       TEMA CLARO / ESCURO
+    ============================================================= */
+    function applyTheme(theme) {
+      state.theme = theme;
+      document.documentElement.setAttribute('data-theme', theme);
+      if (theme === 'light') {
+        themeIcon.textContent  = '🌙';
+        themeLabel.textContent = 'Modo escuro';
+      } else {
+        themeIcon.textContent  = '☀️';
+        themeLabel.textContent = 'Modo claro';
+      }
+      // Persiste preferência
+      try { localStorage.setItem('qrforge-theme', theme); } catch (_) {}
+    }
+
+    themeToggle.addEventListener('click', () => {
+      applyTheme(state.theme === 'dark' ? 'light' : 'dark');
+    });
+
+    // Carrega preferência salva ou respeita o sistema
+    (function initTheme() {
+      try {
+        const saved = localStorage.getItem('qrforge-theme');
+        if (saved) return applyTheme(saved);
+      } catch (_) {}
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      applyTheme(prefersDark ? 'dark' : 'light');
+    })();
+
+    /* =============================================================
+       TABS DE TIPO
+    ============================================================= */
+    tabBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const newType = btn.dataset.type;
+        if (newType === state.type) return;
+
+        // Atualiza estado visual das tabs
+        tabBtns.forEach(b => {
+          b.classList.remove('active');
+          b.setAttribute('aria-selected', 'false');
+        });
+        btn.classList.add('active');
+        btn.setAttribute('aria-selected', 'true');
+
+        // Atualiza estado interno
+        state.type = newType;
+        const cfg   = typeConfig[newType];
+
+        // Atualiza o campo
+        inputEl.type        = cfg.inputType;
+        inputEl.placeholder = cfg.placeholder;
+        inputEl.value       = '';
+        inputLabel.textContent = cfg.label;
+
+        // Limpa erros
+        clearErrors();
+
+        // Esconde QR anterior
+        qrSection.classList.remove('visible');
+      });
+    });
+
+    /* =============================================================
+       SLIDER DE TAMANHO
+    ============================================================= */
+    sizeRange.addEventListener('input', () => {
+      state.size = parseInt(sizeRange.value, 10);
+      sizeDisplay.textContent = `${state.size} px`;
+    });
+
+    /* =============================================================
+       GERAR QR CODE
+    ============================================================= */
+    btnGenerate.addEventListener('click', generateQR);
+    inputEl.addEventListener('keydown', e => { if (e.key === 'Enter') generateQR(); });
+
+    function generateQR() {
+      clearErrors();
+
+      const raw = inputEl.value.trim();
+      const cfg = typeConfig[state.type];
+
+      // Validação
+      if (!raw) {
+        showFieldError('Por favor, preencha o campo antes de gerar.');
+        return;
+      }
+      if (!cfg.validate(raw)) {
+        showFieldError(cfg.errorHint);
+        return;
+      }
+
+      const qrData = cfg.prefix + raw;
+
+      // Limpa QR anterior
+      qrContainer.innerHTML = '';
+      if (qrInstance) { try { qrInstance.clear(); } catch (_) {} qrInstance = null; }
+
+      // Gera novo QR Code
+      try {
+        qrInstance = new QRCode(qrContainer, {
+          text:           qrData,
+          width:          state.size,
+          height:         state.size,
+          correctLevel:   QRCode.CorrectLevel.H,
+        });
+      } catch (err) {
+        showToast('Erro ao gerar o QR Code. Verifique os dados e tente novamente.');
+        return;
+      }
+
+      // Mostra seção
+      qrSection.classList.add('visible');
+
+      // Atualiza contador
+      state.count++;
+      sessionCount.textContent = state.count;
+
+      // Meta informação
+      const typeLabels = { url: 'URL', text: 'Texto', email: 'E-mail', phone: 'Telefone' };
+      const now = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      qrMeta.textContent = `Tipo: ${typeLabels[state.type]} · Tamanho: ${state.size}×${state.size}px · Gerado às ${now}`;
+
+      // Scroll suave até o QR
+      setTimeout(() => qrSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+    }
+
+    /* =============================================================
+       DOWNLOAD PNG
+    ============================================================= */
+    btnDownload.addEventListener('click', () => {
+      // A lib QRCode.js cria um <canvas> ou uma <img> dependendo do browser
+      const canvas = qrContainer.querySelector('canvas');
+      const img    = qrContainer.querySelector('img');
+
+      if (canvas) {
+        // Canvas → PNG direto
+        downloadCanvas(canvas);
+      } else if (img) {
+        // Img (IE fallback) → desenha em canvas temporário e baixa
+        const tmpCanvas = document.createElement('canvas');
+        tmpCanvas.width  = img.naturalWidth  || state.size;
+        tmpCanvas.height = img.naturalHeight || state.size;
+        const ctx = tmpCanvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        downloadCanvas(tmpCanvas);
+      } else {
+        showToast('Nenhum QR Code gerado ainda.');
+      }
+    });
+
+    function downloadCanvas(canvas) {
+      const link    = document.createElement('a');
+      link.download = 'qrcode-qrforge.png';
+      link.href     = canvas.toDataURL('image/png');
+      link.click();
+    }
+
+    /* =============================================================
+       LIMPAR
+    ============================================================= */
+    btnClear.addEventListener('click', () => {
+      inputEl.value = '';
+      clearErrors();
+      qrSection.classList.remove('visible');
+      qrContainer.innerHTML = '';
+      if (qrInstance) { try { qrInstance.clear(); } catch (_) {} qrInstance = null; }
+      inputEl.focus();
+    });
+
+    /* =============================================================
+       HELPERS DE ERRO
+    ============================================================= */
+    function clearErrors() {
+      inputEl.classList.remove('error');
+      inputError.classList.remove('visible');
+      inputError.textContent = '';
+    }
+
+    function showFieldError(msg) {
+      inputEl.classList.add('error');
+      inputError.textContent = msg;
+      inputError.classList.add('visible');
+      inputEl.focus();
+    }
+
+    let toastTimer = null;
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 3500);
+    }
+  </script>
+
+</body>
+</html>
